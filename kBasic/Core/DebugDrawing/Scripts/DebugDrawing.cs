@@ -169,7 +169,7 @@ namespace kBasic.Core
 				transformLabelV.position = Vector3.Lerp(arcEndPoint, verticalPoint, 0.5f);
 				labelV = transformLabelV.GetComponent<TextMesh>();
 				var distanceValue = Vector3.Distance(arcEndPoint, verticalPoint);
-				labelV.text = string.Format("{0:0.00}", heightValue);
+				labelV.text = string.Format("{0:0.00}", distanceValue);
 				labelV.characterSize = 0.1f;
 			}
 			else
