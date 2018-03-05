@@ -44,16 +44,18 @@ namespace kBasic.Maths
 
 		void OnEnable()
         {
-			m_CurveType = serializedObject.FindProperty("m_CurveType");
-            m_PointCount = serializedObject.FindProperty("m_PointCount");
-			m_Height = serializedObject.FindProperty("m_Height");
-			m_Distance = serializedObject.FindProperty("m_Distance");
-			m_Offset = serializedObject.FindProperty("m_Offset");
-			m_Segments = serializedObject.FindProperty("m_Segments");
-			m_ContinueStraight = serializedObject.FindProperty("m_ContinueStraight");
-			m_ContinueDistance = serializedObject.FindProperty("m_ContinueDistance");
-			m_Collisions = serializedObject.FindProperty("m_Collisions");
-			m_CollisionLayers = serializedObject.FindProperty("m_CollisionLayers");
+			SerializedProperty properties = serializedObject.FindProperty("m_Properties");
+			m_CurveType = properties.FindPropertyRelative("curveType");
+            m_PointCount = properties.FindPropertyRelative("pointCount");
+			m_Height = properties.FindPropertyRelative("height");
+			m_Distance = properties.FindPropertyRelative("distance");
+			m_Offset = properties.FindPropertyRelative("offset");
+			m_Segments = properties.FindPropertyRelative("segments");
+			m_ContinueStraight = properties.FindPropertyRelative("continueStraight");
+			m_ContinueDistance = properties.FindPropertyRelative("continueDistance");
+			m_Collisions = properties.FindPropertyRelative("collisions");
+			m_CollisionLayers = properties.FindPropertyRelative("collisionLayers");
+
 			m_ShowDebug = serializedObject.FindProperty("m_ShowDebug");
 			m_ShowRulers = serializedObject.FindProperty("m_ShowRulers");
 			m_ShowCollision = serializedObject.FindProperty("m_ShowCollision");

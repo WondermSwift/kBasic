@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using kBasic.Core;
@@ -22,60 +23,123 @@ namespace kBasic.Maths
 
 		// ----------------------------------------
 		// Constructors
-
+		
+		/// <summary>
+		/// A class for generating sine and cosine curves. Can also check collisions along the curve.
+		/// </summary>
 		public Curve()
 		{
 			m_Points = CalculateCurve();
 		}
 
+		/// <summary>
+        /// A class for generating sine and cosine curves. Can also check collisions along the curve.
+		/// </summary>
+		/// <param name="type"> Type of mathmatical curve to use. Sine or Cosine. </param>
+		/// <param name="pointCount"> Amount of points used when calculating the curve. </param>
+		/// <param name="height"> Maximum height of the curve. </param>
+		/// <param name="distance"> Maximum distance of the curve. </param>
+		/// <param name="segments"> Amount of curve segments to complete within the distance. </param>
 		public Curve(CurveType type, int pointCount, float height, float distance, int segments = 1)
 		{
-			m_CurveType = type;
-			m_PointCount = pointCount;
-			m_Height = height;
-			m_Distance = distance;
-			m_Segments = segments;
+			m_Properties = new Properties();
+			m_Properties.curveType = type;
+			m_Properties.pointCount = pointCount;
+			m_Properties.height = height;
+			m_Properties.distance = distance;
+			m_Properties.segments = segments;
 			m_Points = CalculateCurve();
 		}
 
+		/// <summary>
+        /// A class for generating sine and cosine curves. Can also check collisions along the curve.
+		/// </summary>
+		/// <param name="type"> Type of mathmatical curve to use. Sine or Cosine. </param>
+		/// <param name="pointCount"> Amount of points used when calculating the curve. </param>
+		/// <param name="height"> Maximum height of the curve. </param>
+		/// <param name="distance"> Maximum distance of the curve. </param>
+		/// <param name="offset"> Offsets the starting point of the curve calculation. </param>
+		/// <param name="segments"> Amount of curve segments to complete within the distance. </param>
 		public Curve(CurveType type, int pointCount, float height, float distance, float offset, int segments = 1)
 		{
-			m_CurveType = type;
-			m_PointCount = pointCount;
-			m_Height = height;
-			m_Distance = distance;
-			m_Offset = offset;
-			m_Segments = segments;
+			m_Properties = new Properties();
+			m_Properties.curveType = type;
+			m_Properties.pointCount = pointCount;
+			m_Properties.height = height;
+			m_Properties.distance = distance;
+			m_Properties.offset = offset;
+			m_Properties.segments = segments;
 			m_Points = CalculateCurve();
 		}
 
+		/// <summary>
+        /// A class for generating sine and cosine curves. Can also check collisions along the curve.
+		/// </summary>
+		/// <param name="type"> Type of mathmatical curve to use. Sine or Cosine. </param>
+		/// <param name="pointCount"> Amount of points used when calculating the curve. </param>
+		/// <param name="height"> Maximum height of the curve. </param>
+		/// <param name="distance"> Maximum distance of the curve. </param>
+		/// <param name="offset"> Offsets the starting point of the curve calculation. </param>
+		/// <param name="continueStraight"> If enabled the curve will continue in a straight line after the maximum curve distance. </param>
+		/// <param name="continueDistance"> Distance the line should continue after the maximum curve distance. </param>
+		/// <param name="segments"> Amount of curve segments to complete within the distance. </param>
 		public Curve(CurveType type, int pointCount, float height, float distance, float offset, bool continueStraight, float continueDistance, int segments = 1)
 		{
-			m_CurveType = type;
-			m_PointCount = pointCount;
-			m_Height = height;
-			m_Distance = distance;
-			m_Offset = offset;
-			m_ContinueStraight = continueStraight;
-			m_ContinueDistance = continueDistance;
-			m_Segments = segments;
+			m_Properties = new Properties();
+			m_Properties.curveType = type;
+			m_Properties.pointCount = pointCount;
+			m_Properties.height = height;
+			m_Properties.distance = distance;
+			m_Properties.offset = offset;
+			m_Properties.continueStraight = continueStraight;
+			m_Properties.continueDistance = continueDistance;
+			m_Properties.segments = segments;
+			m_Points = CalculateCurve();
+		}
+
+		/// <summary>
+        /// A class for generating sine and cosine curves. Can also check collisions along the curve.
+		/// </summary>
+		/// <param name="properties"> Properties for the curve. </param>
+		public Curve(Properties properties)
+		{
+			m_Properties = properties;
 			m_Points = CalculateCurve();
 		}
 
 		// ----------------------------------------
 		// Properties
+
+		[Serializable]
+		public class Properties
+		{
+			[SerializeField] public CurveType curveType;
+			public int pointCount;
+			public float height;
+			public float distance;
+			public float offset;
+			public int segments;
+			public bool continueStraight;
+			public float continueDistance;
+			public bool collisions;
+			public LayerMask collisionLayers;
+
+			public Properties()
+			{
+				curveType = CurveType.Sine;
+				pointCount = 64;
+				height = 1.0f;
+				distance = 1.0f;
+				offset = 0.0f;
+				segments = 1;
+				continueStraight = false;
+				continueDistance = 1.0f;
+				collisions = false;
+				collisionLayers = 0;
+			}
+		}
 		
-		// Curve Parameters
-		[SerializeField] private CurveType m_CurveType = CurveType.Sine;
-		[SerializeField] private int m_PointCount = 64;
-		[SerializeField] private float m_Height = 1.0f;
-		[SerializeField] private float m_Distance = 1.0f;
-		[SerializeField] private float m_Offset = 0.0f;
-		[SerializeField] private int m_Segments = 1;
-		[SerializeField] private bool m_ContinueStraight = false;
-		[SerializeField] private float m_ContinueDistance = 1.0f;
-		[SerializeField] private bool m_Collisions = false;
-		[SerializeField] private LayerMask m_CollisionLayers;
+		private Properties m_Properties;
 
 		// ----------------------------------------
 		// Public API
@@ -85,8 +149,8 @@ namespace kBasic.Maths
 		/// </summary>
 		public CurveType curveType 
 		{ 
-			get { return m_CurveType; } 
-			set { m_CurveType = value; }
+			get { return m_Properties.curveType; } 
+			set { m_Properties.curveType = value; }
 		}
 
 		/// <summary>
@@ -94,8 +158,8 @@ namespace kBasic.Maths
 		/// </summary>
 		public int pointCount 
 		{ 
-			get { return m_PointCount; } 
-			set { m_PointCount = value; }
+			get { return m_Properties.pointCount; } 
+			set { m_Properties.pointCount = value; }
 		}
 
 		/// <summary>
@@ -103,8 +167,8 @@ namespace kBasic.Maths
 		/// </summary>
 		public float height 
 		{ 
-			get { return m_Height; } 
-			set { m_Height = value; }
+			get { return m_Properties.height; } 
+			set { m_Properties.height = value; }
 		}
 
 		/// <summary>
@@ -112,8 +176,8 @@ namespace kBasic.Maths
 		/// </summary>
 		public float distance 
 		{ 
-			get { return m_Distance; } 
-			set { m_Distance = value; }
+			get { return m_Properties.distance; } 
+			set { m_Properties.distance = value; }
 		}
 
 		/// <summary>
@@ -121,8 +185,8 @@ namespace kBasic.Maths
 		/// </summary>
 		public float offset 
 		{ 
-			get { return m_Offset; } 
-			set { m_Offset = value; }
+			get { return m_Properties.offset; } 
+			set { m_Properties.offset = value; }
 		}
 
 		/// <summary>
@@ -130,8 +194,8 @@ namespace kBasic.Maths
 		/// </summary>
 		public int segments 
 		{ 
-			get { return m_Segments; } 
-			set { m_Segments = value; }
+			get { return m_Properties.segments; } 
+			set { m_Properties.segments = value; }
 		}
 
 		/// <summary>
@@ -139,8 +203,8 @@ namespace kBasic.Maths
 		/// </summary>
 		public bool continueStraight 
 		{ 
-			get { return m_ContinueStraight; } 
-			set { m_ContinueStraight = value; }
+			get { return m_Properties.continueStraight; } 
+			set { m_Properties.continueStraight = value; }
 		}
 
 		/// <summary>
@@ -148,8 +212,8 @@ namespace kBasic.Maths
 		/// </summary>
 		public float continueDistance 
 		{ 
-			get { return m_ContinueDistance; } 
-			set { m_ContinueDistance = value; }
+			get { return m_Properties.continueDistance; } 
+			set { m_Properties.continueDistance = value; }
 		}
 
 		/// <summary>
@@ -157,8 +221,8 @@ namespace kBasic.Maths
 		/// </summary>
 		public bool collisions 
 		{ 
-			get { return m_Collisions; } 
-			set { m_Collisions = value; }
+			get { return m_Properties.collisions; } 
+			set { m_Properties.collisions = value; }
 		}
 
 		/// <summary>
@@ -166,8 +230,8 @@ namespace kBasic.Maths
 		/// </summary>
 		public int collisionLayers 
 		{ 
-			get { return m_CollisionLayers; } 
-			set { m_CollisionLayers = value; }
+			get { return m_Properties.collisionLayers; } 
+			set { m_Properties.collisionLayers = value; }
 		}
 
 		/// <summary>
@@ -206,8 +270,8 @@ namespace kBasic.Maths
 		/// <param name="layerMask"> Sets which layers should be used for collision. </param>
 		public void SetCollisionParameters(bool enabled, int layerMask)
 		{
-			m_Collisions = enabled;
-			m_CollisionLayers = layerMask;
+			m_Properties.collisions = enabled;
+			m_Properties.collisionLayers = layerMask;
 		}
 
 		/// <summary>
@@ -229,11 +293,11 @@ namespace kBasic.Maths
 
 		private Vector3[] CalculateCurve()
 		{
-			m_Points = new Vector3[m_PointCount];
-			int segments = Mathf.Max(1, m_Segments);
-			int pointCount = Mathf.Max(1, m_PointCount);
+			m_Points = new Vector3[m_Properties.pointCount];
+			int segments = Mathf.Max(1, m_Properties.segments);
+			int pointCount = Mathf.Max(1, m_Properties.pointCount);
 
-			if(m_ContinueStraight)
+			if(m_Properties.continueStraight)
 				m_Points = new Vector3[pointCount + 1];
 			else
 				m_Points = new Vector3[pointCount];
@@ -243,24 +307,24 @@ namespace kBasic.Maths
 				float time = (segments/((float)pointCount - segments)) * i;
 				float pointHeight;
 
-				switch(m_CurveType)
+				switch(m_Properties.curveType)
 				{
 					case CurveType.Cosine:
-						pointHeight = m_Height * Mathf.Cos((time + m_Offset) * Mathf.PI);
+						pointHeight = m_Properties.height * Mathf.Cos((time + m_Properties.offset) * Mathf.PI);
 						break;
 					default:
-						pointHeight = m_Height * Mathf.Sin((time + m_Offset) * Mathf.PI);
+						pointHeight = m_Properties.height * Mathf.Sin((time + m_Properties.offset) * Mathf.PI);
 						break;
 				}
 
-				float pointLength = time * m_Distance / segments;
+				float pointLength = time * m_Properties.distance / segments;
 				m_Points[i] = new Vector3(0, pointHeight, pointLength);
 			}
 
-			if(m_ContinueStraight)
+			if(m_Properties.continueStraight)
 			{
 				Vector3 direction = Vector3.Normalize(m_Points[pointCount - 1] - m_Points[pointCount - 2]);
-				m_Points[pointCount] = m_Points[pointCount - 1] + direction * m_ContinueDistance;
+				m_Points[pointCount] = m_Points[pointCount - 1] + direction * m_Properties.continueDistance;
 			}
 			
 			return m_Points;
@@ -268,7 +332,7 @@ namespace kBasic.Maths
 
 		private bool CalculateCollision(Vector3[] points, out RaycastHit hitInfo)
 		{
-			int pointCount = Mathf.Max(1, m_PointCount);
+			int pointCount = Mathf.Max(1, m_Properties.pointCount);
 
 			for(int i = 0; i < pointCount - 1; i++)
 			{
@@ -277,7 +341,7 @@ namespace kBasic.Maths
 				Ray ray = new Ray(points[i], direction);
 				RaycastHit hit;
 				
-				if(Physics.Raycast(ray, out hit, distance, m_CollisionLayers))
+				if(Physics.Raycast(ray, out hit, distance, m_Properties.collisionLayers))
 				{
 					hitInfo = hit;
 					return true;

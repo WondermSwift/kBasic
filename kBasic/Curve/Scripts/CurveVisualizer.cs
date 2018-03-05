@@ -15,16 +15,7 @@ namespace kBasic.Maths
 		// Properties
 		
 		// Curve Parameters
-		[SerializeField] private Curve.CurveType m_CurveType = Curve.CurveType.Sine;
-		[SerializeField] private int m_PointCount = 64;
-		[SerializeField] private float m_Height = 1.0f;
-		[SerializeField] private float m_Distance = 1.0f;
-		[SerializeField] private float m_Offset = 0.0f;
-		[SerializeField] private int m_Segments = 1;
-		[SerializeField] private bool m_ContinueStraight = false;
-		[SerializeField] private float m_ContinueDistance = 1.0f;
-		[SerializeField] private bool m_Collisions = false;
-		[SerializeField] private LayerMask m_CollisionLayers;
+		[SerializeField] private Curve.Properties m_Properties;
 
 		// Debug Options
 		[SerializeField] private bool m_ShowDebug = false;
@@ -39,8 +30,8 @@ namespace kBasic.Maths
 		/// </summary>
 		public Curve.CurveType curveType 
 		{ 
-			get { return m_CurveType; } 
-			set { m_CurveType = value; }
+			get { return m_Properties.curveType; } 
+			set { m_Properties.curveType = value; }
 		}
 
 		/// <summary>
@@ -48,8 +39,8 @@ namespace kBasic.Maths
 		/// </summary>
 		public int pointCount 
 		{ 
-			get { return m_PointCount; } 
-			set { m_PointCount = value; }
+			get { return m_Properties.pointCount; } 
+			set { m_Properties.pointCount = value; }
 		}
 
 		/// <summary>
@@ -57,8 +48,8 @@ namespace kBasic.Maths
 		/// </summary>
 		public float height 
 		{ 
-			get { return m_Height; } 
-			set { m_Height = value; }
+			get { return m_Properties.height; } 
+			set { m_Properties.height = value; }
 		}
 
 		/// <summary>
@@ -66,8 +57,8 @@ namespace kBasic.Maths
 		/// </summary>
 		public float distance 
 		{ 
-			get { return m_Distance; } 
-			set { m_Distance = value; }
+			get { return m_Properties.distance; } 
+			set { m_Properties.distance = value; }
 		}
 
 		/// <summary>
@@ -75,8 +66,8 @@ namespace kBasic.Maths
 		/// </summary>
 		public float offset 
 		{ 
-			get { return m_Offset; } 
-			set { m_Offset = value; }
+			get { return m_Properties.offset; } 
+			set { m_Properties.offset = value; }
 		}
 
 		/// <summary>
@@ -84,8 +75,8 @@ namespace kBasic.Maths
 		/// </summary>
 		public int segments 
 		{ 
-			get { return m_Segments; } 
-			set { m_Segments = value; }
+			get { return m_Properties.segments; } 
+			set { m_Properties.segments = value; }
 		}
 
 		/// <summary>
@@ -93,8 +84,8 @@ namespace kBasic.Maths
 		/// </summary>
 		public bool continueStraight 
 		{ 
-			get { return m_ContinueStraight; } 
-			set { m_ContinueStraight = value; }
+			get { return m_Properties.continueStraight; } 
+			set { m_Properties.continueStraight = value; }
 		}
 
 		/// <summary>
@@ -102,8 +93,8 @@ namespace kBasic.Maths
 		/// </summary>
 		public float continueDistance 
 		{ 
-			get { return m_ContinueDistance; } 
-			set { m_ContinueDistance = value; }
+			get { return m_Properties.continueDistance; } 
+			set { m_Properties.continueDistance = value; }
 		}
 
 		/// <summary>
@@ -111,8 +102,8 @@ namespace kBasic.Maths
 		/// </summary>
 		public bool collisions 
 		{ 
-			get { return m_Collisions; } 
-			set { m_Collisions = value; }
+			get { return m_Properties.collisions; } 
+			set { m_Properties.collisions = value; }
 		}
 
 		/// <summary>
@@ -120,8 +111,8 @@ namespace kBasic.Maths
 		/// </summary>
 		public int collisionLayers 
 		{ 
-			get { return m_CollisionLayers; } 
-			set { m_CollisionLayers = value; }
+			get { return m_Properties.collisionLayers; } 
+			set { m_Properties.collisionLayers = value; }
 		}
 
 		/// <summary>
@@ -159,7 +150,7 @@ namespace kBasic.Maths
 			get 
 			{ 
 				if(m_Curve == null)
-					m_Curve = GetCurve();
+					m_Curve = NewCurve();
 				return m_Curve; 
 			} 
 		}
@@ -174,23 +165,23 @@ namespace kBasic.Maths
 		// ----------------------------------------
 		// Methods
 
-		private Curve GetCurve()
+		private Curve NewCurve()
 		{
-			Curve curve = new Curve(m_CurveType, m_PointCount, m_Height, 
-									m_Distance, m_Offset, m_ContinueStraight, 
-									m_ContinueDistance, m_Segments);
-			curve.SetCollisionParameters(m_Collisions, m_CollisionLayers);
+			Curve curve = new Curve(m_Properties.curveType, m_Properties.pointCount, m_Properties.height, 
+									m_Properties.distance, m_Properties.offset, m_Properties.continueStraight, 
+									m_Properties.continueDistance, m_Properties.segments);
+			curve.SetCollisionParameters(m_Properties.collisions, m_Properties.collisionLayers);
 			return curve;
 		}
 
 		private void Update()
 		{
-			m_Curve = GetCurve();
+			m_Curve = NewCurve();
 
 			if(m_ShowDebug)
-				m_CurveDebug = DebugDrawing.DrawCurve(transform, m_Curve.GetPoints(), "Debug_Curve", segments, m_ContinueStraight, m_ShowRulers);
+				m_CurveDebug = DebugDrawing.DrawCurve(transform, m_Curve.GetPoints(), "Debug_Curve", segments, m_Properties.continueStraight, m_ShowRulers);
 
-			if(m_Collisions)
+			if(m_Properties.collisions)
 			{
 				RaycastHit hit;
 				if(m_Curve.GetCollision(out hit))
@@ -220,7 +211,7 @@ namespace kBasic.Maths
 				if(m_CurveDebug)
 					DestroyImmediate(m_CurveDebug);
 			}
-			else if(!m_Collisions || !m_ShowCollision)
+			else if(!m_Properties.collisions || !m_ShowCollision)
 			{
 				if(m_HitPointDebug)
 					DestroyImmediate(m_HitPointDebug);
