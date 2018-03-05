@@ -83,7 +83,7 @@ namespace kBasic.Core
 				// Get useful points
 				int endPointIndex = (int)(points.Length) - segments;
 				if(continueLine)
-					endPointIndex--;
+					endPointIndex -- ;
 				Vector3 firstPoint = new Vector3(points[0].x, transformCurve.position.y, points[0].z);
 				Vector3 arcEndPoint = new Vector3(points[endPointIndex].x, transformCurve.position.y, points[endPointIndex].z);
 				float maxMeight = 0.0f;

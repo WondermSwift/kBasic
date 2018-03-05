@@ -6,15 +6,60 @@ using kBasic.Core;
 namespace kBasic.Maths
 {
 	/// <summary>
-	/// Amount of points used when calculating the curve.
+	/// A class for generating sine and cosine curves. Can also check collisions along the curve.
 	/// </summary>
 	[ExecuteInEditMode]
-	public class Curve : MonoBehaviour 
+	public class Curve 
 	{
+		// ----------------------------------------
+		// Enums
+
 		public enum CurveType
 		{
 			Sine,
 			Cosine
+		}
+
+		// ----------------------------------------
+		// Constructors
+
+		public Curve()
+		{
+			m_Points = CalculateCurve();
+		}
+
+		public Curve(CurveType type, int pointCount, float height, float distance, int segments = 1)
+		{
+			m_CurveType = type;
+			m_PointCount = pointCount;
+			m_Height = height;
+			m_Distance = distance;
+			m_Segments = segments;
+			m_Points = CalculateCurve();
+		}
+
+		public Curve(CurveType type, int pointCount, float height, float distance, float offset, int segments = 1)
+		{
+			m_CurveType = type;
+			m_PointCount = pointCount;
+			m_Height = height;
+			m_Distance = distance;
+			m_Offset = offset;
+			m_Segments = segments;
+			m_Points = CalculateCurve();
+		}
+
+		public Curve(CurveType type, int pointCount, float height, float distance, float offset, bool continueStraight, float continueDistance, int segments = 1)
+		{
+			m_CurveType = type;
+			m_PointCount = pointCount;
+			m_Height = height;
+			m_Distance = distance;
+			m_Offset = offset;
+			m_ContinueStraight = continueStraight;
+			m_ContinueDistance = continueDistance;
+			m_Segments = segments;
+			m_Points = CalculateCurve();
 		}
 
 		// ----------------------------------------
@@ -31,10 +76,6 @@ namespace kBasic.Maths
 		[SerializeField] private float m_ContinueDistance = 1.0f;
 		[SerializeField] private bool m_Collisions = false;
 		[SerializeField] private LayerMask m_CollisionLayers;
-
-		// Debug Options
-		[SerializeField] private bool m_ShowDebug = false;
-		[SerializeField] private bool m_ShowRulers = false;
 
 		// ----------------------------------------
 		// Public API
@@ -130,34 +171,13 @@ namespace kBasic.Maths
 		}
 
 		/// <summary>
-        /// Enables debug drawing in player and edit modes.
-		/// </summary>
-		public bool showDebug 
-		{ 
-			get { return m_ShowDebug; } 
-			set { m_ShowDebug = value; }
-		}
-
-		/// <summary>
-        /// Enables debug rulers for maximum curve distance and height.
-		/// </summary>
-		public bool showRulers 
-		{ 
-			get { return m_ShowRulers; } 
-			set { m_ShowRulers = value; }
-		}
-
-		/// <summary>
-        /// Array of points that make up the curve.
-		/// </summary>
-		public Vector3[] points { get { return m_Points; }}
-
-		/// <summary>
         /// Get an Animation Curve that represents the calculated curve.
 		/// </summary>
 		/// <returns> Returns an Animation Curve with values equaling the calculated curve. </returns>
-		public AnimationCurve GetCurve()
+		public AnimationCurve GetAnimationCurve()
 		{
+			if(m_Points == null)
+				m_Points = CalculateCurve();
 			AnimationCurve curve = new AnimationCurve();
 			Keyframe[] curveKeys = new Keyframe[m_Points.Length];
 			for(int i = 0; i < m_Points.Length; i++)
@@ -169,31 +189,47 @@ namespace kBasic.Maths
 		}
 
 		/// <summary>
-        /// Get collisions information from the curve.
+        /// Get the points of the calculated curve.
+		/// </summary>
+		/// <returns> Returns a Vector 3 array of the calculate curve points. </returns>
+		public Vector3[] GetPoints()
+		{
+			if(m_Points == null)
+				m_Points = CalculateCurve();
+			return m_Points;
+		}
+
+		/// <summary>
+        /// Set collision parameters the curve.
+		/// </summary>
+		/// <param name="enabled"> Sets collision check on or off. </param>
+		/// <param name="layerMask"> Sets which layers should be used for collision. </param>
+		public void SetCollisionParameters(bool enabled, int layerMask)
+		{
+			m_Collisions = enabled;
+			m_CollisionLayers = layerMask;
+		}
+
+		/// <summary>
+        /// Get collision information the curve.
 		/// </summary>
 		/// <param name="hitInfo"> Contains raycast hit information if active collision. </param>
 		/// <returns> Returns true if the curve has an active collision. </returns>
 		public bool GetCollision(out RaycastHit hitInfo)
 		{
-			hitInfo = m_HitInfo;
-			return m_Hit;
+			if(m_Points == null)
+				m_Points = CalculateCurve();
+			return CalculateCollision(m_Points, out hitInfo);
 		}
-
-		// ----------------------------------------
-		// Members
-
-		private Vector3[] m_Points;
-		private bool m_Hit;
-		private Vector3 m_HitPoint;
-		private RaycastHit m_HitInfo;
-		private GameObject m_CurveDebug;
-		private GameObject m_HitPointDebug;
 
 		// ----------------------------------------
 		// Core Methods
 
-		private void CalculateCurve()
+		private Vector3[] m_Points;
+
+		private Vector3[] CalculateCurve()
 		{
+			m_Points = new Vector3[m_PointCount];
 			int segments = Mathf.Max(1, m_Segments);
 			int pointCount = Mathf.Max(1, m_PointCount);
 
@@ -205,8 +241,8 @@ namespace kBasic.Maths
 			for(int i = 0; i < pointCount; i++)
 			{
 				float time = (segments/((float)pointCount - segments)) * i;
-
 				float pointHeight;
+
 				switch(m_CurveType)
 				{
 					case CurveType.Cosine:
@@ -224,70 +260,32 @@ namespace kBasic.Maths
 			if(m_ContinueStraight)
 			{
 				Vector3 direction = Vector3.Normalize(m_Points[pointCount - 1] - m_Points[pointCount - 2]);
-				m_Points[m_Points.Length - 1] = m_Points[pointCount - 1] + direction * m_ContinueDistance;
+				m_Points[pointCount] = m_Points[pointCount - 1] + direction * m_ContinueDistance;
 			}
-
-			if(m_ShowDebug)
-				m_CurveDebug = DebugDrawing.DrawCurve(transform, m_Points, "Debug_Curve", segments, m_ContinueStraight, m_ShowRulers);
+			
+			return m_Points;
 		}
 
-		private void CheckCollision()
+		private bool CalculateCollision(Vector3[] points, out RaycastHit hitInfo)
 		{
 			int pointCount = Mathf.Max(1, m_PointCount);
 
 			for(int i = 0; i < pointCount - 1; i++)
 			{
-				Vector3 direction = m_Points[i + 1] - m_Points[i];
-				float distance = Vector3.Distance(m_Points[i], m_Points[i + 1]);
-
-				Ray ray = new Ray(m_Points[i], direction);
-				RaycastHit hitInfo;
-				if(Physics.Raycast(ray, out hitInfo, distance, m_CollisionLayers))
+				Vector3 direction = points[i + 1] - points[i];
+				float distance = Vector3.Distance(points[i], points[i + 1]);
+				Ray ray = new Ray(points[i], direction);
+				RaycastHit hit;
+				
+				if(Physics.Raycast(ray, out hit, distance, m_CollisionLayers))
 				{
-					m_HitPoint = hitInfo.point;
-					m_HitInfo = hitInfo;
-					m_Hit = true;
-					if(m_ShowDebug)
-						m_HitPointDebug = DebugDrawing.DrawPoint(transform, m_HitPoint, 0.1f, "Debug_HitPoint");
-					return;
+					hitInfo = hit;
+					return true;
 				}
-			}
+			}	
 
-			m_Hit = false;
-			if(m_HitPointDebug)
-				DestroyImmediate(m_HitPointDebug);
-		}
-
-		// ----------------------------------------
-		// Timed Methods
-
-		private void Update()
-		{
-			CalculateCurve();
-
-			if(m_Collisions)
-				CheckCollision();
-			
-			ManageDebugObjects();
-		}
-
-		// ----------------------------------------
-		// Debug Methods
-
-		private void ManageDebugObjects()
-		{
-			if(!m_ShowDebug)
-			{
-				if(m_HitPointDebug)
-					DestroyImmediate(m_HitPointDebug);
-				if(m_CurveDebug)
-					DestroyImmediate(m_CurveDebug);
-			}
-			else if(!m_Collisions)
-			{
-				if(m_HitPointDebug)
-					DestroyImmediate(m_HitPointDebug);
-			}
+			hitInfo = new RaycastHit();
+			return false;
 		}
 	}
 }

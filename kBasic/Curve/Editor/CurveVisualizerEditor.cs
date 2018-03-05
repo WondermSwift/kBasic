@@ -6,8 +6,8 @@ using kBasic.Core;
 
 namespace kBasic.Maths
 {
-	[CustomEditor(typeof(Curve))]
-	public class CurveEditor : Editor 
+	[CustomEditor(typeof(CurveVisualizer))]
+	public class CurveVisualizerEditor : Editor 
 	{
 		internal class Styles
         {
@@ -23,6 +23,7 @@ namespace kBasic.Maths
 			public static GUIContent collisionLayersLabel = new GUIContent("Layers", "Defines which layers the curve should collide with.");
 			public static GUIContent showDebugLabel = new GUIContent("Show Debug", "Enables debug drawing in player and edit modes.");
 			public static GUIContent showRulersLabel = new GUIContent("Rulers", "Enables debug rulers for maximum curve distance and height.");
+			public static GUIContent showCollisionLabel = new GUIContent("Collision", "Enables debug point for collision.");
 
 			public static string[] curveTypeOptions = {"Sine", "Cosine"};
 		}
@@ -39,6 +40,7 @@ namespace kBasic.Maths
 		private SerializedProperty m_CollisionLayers;
 		private SerializedProperty m_ShowDebug;
 		private SerializedProperty m_ShowRulers;
+		private SerializedProperty m_ShowCollision;
 
 		void OnEnable()
         {
@@ -54,6 +56,7 @@ namespace kBasic.Maths
 			m_CollisionLayers = serializedObject.FindProperty("m_CollisionLayers");
 			m_ShowDebug = serializedObject.FindProperty("m_ShowDebug");
 			m_ShowRulers = serializedObject.FindProperty("m_ShowRulers");
+			m_ShowCollision = serializedObject.FindProperty("m_ShowCollision");
         }
 
 		protected void DoPopup(GUIContent label, SerializedProperty property, string[] options)
@@ -107,6 +110,7 @@ namespace kBasic.Maths
 			{
 				EditorGUI.indentLevel++;
 				EditorGUILayout.PropertyField(m_ShowRulers, Styles.showRulersLabel);
+				EditorGUILayout.PropertyField(m_ShowCollision, Styles.showCollisionLabel);
 				EditorGUI.indentLevel--;
 			}
 
